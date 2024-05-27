@@ -11,7 +11,7 @@ const MetaDecoratedPage: React.FC<MetaDecoratedPageProps> = ({
     <>
       <Helmet>
         <meta name="description" content={description} />
-        <title>{title} | LinguaConnect</title>
+        <title>{title} | shyphen-web</title>
       </Helmet>
       {element}
     </>
