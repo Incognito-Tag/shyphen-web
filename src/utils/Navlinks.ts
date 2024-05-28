@@ -27,7 +27,7 @@ export const NavLinks = [
   {
     label: "Leads",
     icon: Leads,
-    route: "/",
+    route: "/admin/leads",
   },
   {
     label: "Sales Report",
