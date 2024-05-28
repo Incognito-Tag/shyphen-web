@@ -1,6 +1,5 @@
 import { FileInput, Flex, Table, Text } from "@mantine/core";
 import { IconUpload } from "@tabler/icons-react";
-import HeaderNav from "../HeaderNav/HeaderNav";
 
 const elements = [
   {

@@ -1,5 +1,5 @@
 import { Flex, Image, NavLink } from "@mantine/core";
-import { Link, redirect } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { NavLinks } from "../../../utils/Navlinks";
 import { useState } from "react";
 
