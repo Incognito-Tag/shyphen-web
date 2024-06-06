@@ -1,11 +1,15 @@
 import axios from "axios";
 import { BACKEND_URL } from "../../config";
 
-const CustomAxios = axios.create({
+export const CustomAxiosFormData = axios.create({
+  baseURL: BACKEND_URL,
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+});
+export const CustomAxiosJson = axios.create({
   baseURL: BACKEND_URL,
   headers: {
     "Content-type": "application/json",
   },
 });
-
-export default CustomAxios;

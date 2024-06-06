@@ -1,8 +1,6 @@
 import Dashboard from "../assets/imgs/Dashboard.svg";
-import Leaderboard from "../assets/imgs/Leaderboard.svg";
 import FollowUp from "../assets/imgs/FollowUp.svg";
 import Leads from "../assets/imgs/Leads.svg";
-import SalesReport from "../assets/imgs/SalesReport.svg";
 import Attendance from "../assets/imgs/Attendance.svg";
 import UserManagement from "../assets/imgs/UserManagement.svg";
 import Calender from "../assets/imgs/Calender.svg";
@@ -15,24 +13,14 @@ export const NavLinks = [
     route: "/",
   },
   {
-    label: "Leaderboard",
-    icon: Leaderboard,
-    route: "/",
-  },
-  {
     label: "Follow Up",
     icon: FollowUp,
-    route: "/",
+    route: "/admin/followup",
   },
   {
     label: "Leads",
     icon: Leads,
     route: "/admin/leads",
-  },
-  {
-    label: "Sales Report",
-    icon: SalesReport,
-    route: "/",
   },
   {
     label: "Attendance",
@@ -42,7 +30,7 @@ export const NavLinks = [
   {
     label: "User Management",
     icon: UserManagement,
-    route: "/",
+    route: "/admin/userManagement",
   },
   {
     label: "Calender",

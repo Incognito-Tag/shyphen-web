@@ -22,7 +22,9 @@ export const showNotification = (
 
 export const currState = {
   UNKNOWN: 0,
-  TUTOR: 1,
-  STUDENT: 2,
+  ADMIN: 1,
+  USER: 2,
   UNPROTECTED: 3,
 };
+
+export const usersTypes = ["telecaller", "employee", "broker"];

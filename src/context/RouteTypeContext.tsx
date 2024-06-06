@@ -11,15 +11,15 @@ export const RouteTypeContextProvider = ({ children }: { children: any }) => {
   const [type, setType] = useState<number>(currState.UNKNOWN);
   useEffect(() => {
     if (
-      location.pathname.includes("/tutor/") &&
+      location.pathname.includes("/admin/") &&
       !location.pathname.includes("/auth")
     ) {
-      setType(currState.TUTOR);
+      setType(currState.ADMIN);
     } else if (
-      location.pathname.includes("/student/") &&
+      location.pathname.includes("/user/") &&
       !location.pathname.includes("/auth/")
     ) {
-      setType(currState.STUDENT);
+      setType(currState.USER);
     } else {
       setType(currState.UNPROTECTED);
     }
