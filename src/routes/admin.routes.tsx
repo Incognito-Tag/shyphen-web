@@ -1,11 +1,10 @@
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 import Home from "../pages/Home";
-import Leads from "../pages/Admin/Leads/Leads";
-import UserManagement from "../pages/Admin/UserManagement/UserManagement";
 import Followup from "../pages/Admin/Followup/Followup";
-import Login from "../pages/Login/Login";
+import UserManagement from "../pages/Admin/UserManagement/UserManagement";
+import Leads from "../pages/Admin/Leads/Leads";
 
-export const unprotectedRoutes: RouteType[] = [
+export const adminRoutes: RouteType[] = [
   {
     path: "/admin/followup",
     element: <Home children={<Followup />} />,
@@ -24,22 +23,18 @@ export const unprotectedRoutes: RouteType[] = [
     title: "Leads",
     description: "Leads page for admin",
   },
-  // {
-  //   path: "/",
-  //   element: <Home children={<>Welcome</>} />,
-  //   title: "Home",
-  //   description: "Home page for admin",
-  // },
+  // TODO
+  // replace admin/home with dashboard
   {
-    path: "/",
-    element: <Login />,
+    path: "/admin/home",
+    element: <Home children={<>Welcome</>} />,
     title: "Home",
     description: "Home page for admin",
   },
   {
     path: "*",
-    element: <Navigate to="/" />,
-    title: "Login",
-    description: "Login page for Student",
+    element: <Navigate to="/admin/home" replace />,
+    title: "Home",
+    description: "Home page for students",
   },
 ];

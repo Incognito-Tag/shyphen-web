@@ -1,4 +1,4 @@
-import { userData } from "../pages/Admin/UserManagement/UserManagement";
+// import { USER } from "../pages/Admin/UserManagement/UserManagement";
 import { CustomAxiosFormData, CustomAxiosJson } from "./customAxios";
 
 export const template = async (params: string) => {
@@ -12,9 +12,27 @@ export const template = async (params: string) => {
     return e.response;
   }
 };
+
+export const requestLogin = async (userDetails: any) => {
+  try {
+    const response = await CustomAxiosJson.post("/auth/login", userDetails);
+    return response;
+  } catch (e: any) {
+    return e.response;
+  }
+};
+
+export const requestUserDetails = async (token: string) => {
+  try {
+    const response = await CustomAxiosJson.post("/auth/getDetails", { token });
+    return response;
+  } catch (e: any) {
+    return e.response;
+  }
+};
 export const fetchAllLeads = async () => {
   try {
-    const response = await CustomAxiosJson.get("/api/leads/getAllLeads");
+    const response = await CustomAxiosJson.get("/leads/getAllLeads");
     return response;
   } catch (e: any) {
     return e.response;
@@ -23,7 +41,7 @@ export const fetchAllLeads = async () => {
 
 export const fetchUnassignedLeads = async () => {
   try {
-    const response = await CustomAxiosJson.get("/api/leads/getUnassignedLeads");
+    const response = await CustomAxiosJson.get("/leads/getUnassignedLeads");
     return response;
   } catch (e: any) {
     return e.response;
@@ -33,7 +51,7 @@ export const fetchUnassignedLeads = async () => {
 export const assignLeadsToUser = async (data: any) => {
   try {
     const response = await CustomAxiosJson.post(
-      "/api/leads/assignLeadsByUserType",
+      "/leads//assignLeadsByUserIds",
       data
     );
     return response;
@@ -44,19 +62,25 @@ export const assignLeadsToUser = async (data: any) => {
 
 export const saveLeadsFile = async (file: FormData) => {
   try {
-    const response = await CustomAxiosFormData.post("/api/leads/upload", file);
+    const response = await CustomAxiosFormData.post("/leads/upload", file);
     return response;
   } catch (e: any) {
     return e.response;
   }
 };
 
-export const saveUser = async (userDetails: userData) => {
+export const saveUser = async ({
+  newUser,
+  password,
+}: {
+  newUser: USER;
+  password: string;
+}) => {
   try {
-    const response = await CustomAxiosJson.post(
-      "/api/users/addUser",
-      userDetails
-    );
+    const response = await CustomAxiosJson.post("/users/addUser", {
+      ...newUser,
+      password,
+    });
     return response;
   } catch (e: any) {
     return e.response;
@@ -67,7 +91,7 @@ export const getAvaibleLeadsByDates = async (dates: any) => {
   try {
     console.log(dates);
     const response = await CustomAxiosJson.post(
-      "api/leads/getAvailableLeadsForDates",
+      "/leads/getAvailableLeadsForDates",
       dates
     );
     return response;
@@ -78,7 +102,7 @@ export const getAvaibleLeadsByDates = async (dates: any) => {
 
 export const fetchUsers = async () => {
   try {
-    const response = await CustomAxiosJson.get("/api/users/getUsers");
+    const response = await CustomAxiosJson.get("/users/getUsers");
     return response;
   } catch (e: any) {
     return e.response;

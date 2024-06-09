@@ -1,10 +1,34 @@
-interface Student {
+type USER = {
   _id: string;
   name: string;
-}
+  employeeId: string;
+  employeeType: string;
+  mobileNo: string;
+  email: string;
+  joiningDate: Date;
+  leads: string[];
+};
 
-interface AuthContextTypeStudent {
-  student?: Student;
+type ADMIN = {
+  _id: string;
+  name: string;
+  employeeId: string;
+  employeeType: string;
+  mobileNo: string;
+  email: string;
+  joiningDate: Date;
+  leads: string[];
+};
+
+interface AuthContextTypeAdmin {
+  admin?: ADMIN;
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  error: boolean;
+  isFetched: boolean;
+}
+interface AuthContextTypeUser {
+  user?: USER;
   isLoggedIn: boolean;
   isLoading: boolean;
   error: boolean;

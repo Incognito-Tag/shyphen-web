@@ -1,4 +1,4 @@
-import { FileInput, Flex, Table, Text } from "@mantine/core";
+import { FileInput, Flex, ScrollArea, Table, Text } from "@mantine/core";
 import {
   IconCsv,
   IconFileBarcode,
@@ -7,9 +7,14 @@ import {
 } from "@tabler/icons-react";
 import { fetchAllLeads, saveLeadsFile } from "../../../utils/apiCalls";
 import { useEffect, useState } from "react";
+import useAuthAdmin from "../../../context/AdminAuthContext";
 
 function Leads() {
   const [leads, setLeads] = useState([]);
+  const { admin } = useAuthAdmin();
+  useEffect(() => {
+    console.log(admin);
+  }, [admin]);
   useEffect(() => {
     fetchAllLeads()
       .then((data) => {
@@ -32,7 +37,7 @@ function Leads() {
     }
   };
   return (
-    <Flex className="w-[100%] px-5 py-3 justify-center flex-col gap-3 bg-slate-50">
+    <Flex className="w-[100%] px-5 py-3 justify-start flex-col gap-3 bg-slate-50">
       <Flex className=" justify-between">
         <Flex className="w-[30%] h-[15vh] flex-col justify-around items-center bg-white rounded-lg py-2 drop-shadow-md">
           {" "}
@@ -59,44 +64,46 @@ function Leads() {
           </Flex>
         </Flex>
       </Flex>
-      <Table
-        highlightOnHover
-        withTableBorder
-        withColumnBorders
-        verticalSpacing="lg"
-        className=" bg-white border-2 drop-shadow-md"
-      >
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>S.No</Table.Th>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Mobile No.</Table.Th>
-            <Table.Th>Email</Table.Th>
-            {/* <Table.Th>Created At</Table.Th> */}
-            <Table.Th>Property Type</Table.Th>
-            <Table.Th>Lead Source</Table.Th>
-            {/* <Table.Th>Lead Owner</Table.Th> */}
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {leads.length !== 0
-            ? leads.map((lead: any, i) => {
-                return (
-                  <Table.Tr key={i}>
-                    <Table.Td>{i + 1}</Table.Td>
-                    <Table.Td>{lead.name}</Table.Td>
-                    <Table.Td>{lead.mobileNo}</Table.Td>
-                    <Table.Td>{lead.email}</Table.Td>
-                    {/* <Table.Td>{lead.createdAt}</Table.Td> */}
-                    <Table.Td>{lead.propertyType}</Table.Td>
-                    <Table.Td>{lead.leadSource}</Table.Td>
-                    {/* <Table.Td>{lead.leadOwner}</Table.Td> */}
-                  </Table.Tr>
-                );
-              })
-            : null}
-        </Table.Tbody>
-      </Table>
+      <ScrollArea h={550}>
+        <Table
+          highlightOnHover
+          withTableBorder
+          withColumnBorders
+          verticalSpacing="lg"
+          className=" bg-white border-2 drop-shadow-md h-max-[70vh]"
+        >
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>S.No</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Mobile No.</Table.Th>
+              <Table.Th>Email</Table.Th>
+              {/* <Table.Th>Created At</Table.Th> */}
+              <Table.Th>Property Type</Table.Th>
+              <Table.Th>Lead Source</Table.Th>
+              {/* <Table.Th>Lead Owner</Table.Th> */}
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {leads.length !== 0
+              ? leads.map((lead: any, i) => {
+                  return (
+                    <Table.Tr key={i}>
+                      <Table.Td>{i + 1}</Table.Td>
+                      <Table.Td>{lead.name}</Table.Td>
+                      <Table.Td>{lead.mobileNo}</Table.Td>
+                      <Table.Td>{lead.email}</Table.Td>
+                      {/* <Table.Td>{lead.createdAt}</Table.Td> */}
+                      <Table.Td>{lead.propertyType}</Table.Td>
+                      <Table.Td>{lead.leadSource}</Table.Td>
+                      {/* <Table.Td>{lead.leadOwner}</Table.Td> */}
+                    </Table.Tr>
+                  );
+                })
+              : null}
+          </Table.Tbody>
+        </Table>
+      </ScrollArea>
     </Flex>
   );
 }

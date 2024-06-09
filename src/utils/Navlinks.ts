@@ -5,7 +5,6 @@ import Attendance from "../assets/imgs/Attendance.svg";
 import UserManagement from "../assets/imgs/UserManagement.svg";
 import Calender from "../assets/imgs/Calender.svg";
 import Setting from "../assets/imgs/Setting.svg";
-import SignOut from "../assets/imgs/SignOut.svg";
 export const NavLinks = [
   {
     label: "Dashboard",
@@ -40,11 +39,6 @@ export const NavLinks = [
   {
     label: "Setting",
     icon: Setting,
-    route: "/",
-  },
-  {
-    label: "Sign Out",
-    icon: SignOut,
     route: "/",
   },
 ];

@@ -3,7 +3,10 @@ import {
   Checkbox,
   Flex,
   Modal,
+  ScrollArea,
+  Select,
   Table,
+  Tabs,
   Text,
   TextInput,
 } from "@mantine/core";
@@ -19,40 +22,36 @@ import { useDisclosure } from "@mantine/hooks";
 import { showNotification, usersTypes } from "../../../utils/helpers";
 import { DateInput } from "@mantine/dates";
 
-export type userData = {
-  name: string;
-  employeeId: string;
-  employeeType: string;
-  mobileNo: string;
-  email: string;
-  joiningDate: Date;
-};
-
 function UserManagement() {
-  const [usersList, setUserslist] = useState<userData[] | null>(null);
-  const [newUser, setNewUser] = useState<userData[] | null>(null);
+  const [usersList, setUserslist] = useState<USER[] | null>(null);
+  const [newUser, setNewUser] = useState<USER | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
-  const [selectedUser, setSelectedUser] = useState<number>();
+  const [toggleAddUserModal, setToggleAddUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<string[]>([]);
   const [leadsStartDate, setLeadsStartDate] = useState<Date | null>(null);
   const [leadsEndDate, setLeadsEndDate] = useState<Date | null>(null);
   const [employeeStarts, setEmployeeStarts] = useState<any>(null);
+  const [password, setPassword] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string | null>(usersTypes[0]);
   useEffect(() => {
     fetchUsers()
       .then((data) => {
         setUserslist(() => {
-          const value = [] as userData[];
+          const value = [] as USER[];
           data.data.forEach((usr: any) => {
-            const newData: userData = {
+            const newData: USER = {
+              _id: "",
               name: "",
               employeeId: "",
               employeeType: "",
               mobileNo: "",
               email: "",
               joiningDate: new Date(),
+              leads: [],
             };
-            const filteredData: userData = Object.fromEntries(
+            const filteredData: USER = Object.fromEntries(
               Object.entries(usr).filter(([k]) => k in newData)
-            ) as userData;
+            ) as USER;
             value.push(filteredData);
           });
           setUserslist(value);
@@ -67,45 +66,42 @@ function UserManagement() {
     console.log(usersList);
   }, [usersList]);
   const addNewRowToTable = () => {
-    if (newUser !== null && newUser.length === 1) {
+    if (newUser !== null) {
       showNotification("Error", "Please fill the existing new user", "error");
       return;
     }
-    const newData: userData = {
+    const newData: USER = {
+      _id: "",
       name: "",
       employeeId: "",
       employeeType: "",
       joiningDate: new Date(),
       mobileNo: "",
       email: "",
+      leads: [],
     };
-    if (newUser !== null) {
-      setNewUser([...newUser, newData]);
-    } else {
-      setNewUser([newData]);
-    }
+    setNewUser(newData);
+    setToggleAddUserModal(true);
   };
-  const updateUserValue = (
-    value: string,
-    index: number,
-    property: keyof userData
-  ) => {
-    console.log(value, index, property);
+  const updateUserValue = (value: string, property: keyof USER) => {
+    console.log(value, property);
     if (newUser !== null) {
       const data = newUser;
-      const temp = Object.keys(data[index]);
+      const temp = Object.keys(data);
       temp.forEach((e) => {
         if (e === property) {
-          data[index][property] = value as string & Date;
+          console.log(e, value);
+          data[property] = value as string & Date & string[];
         }
       });
-      setNewUser([...data]);
+      console.log(data);
+      setNewUser({ ...data });
     }
   };
-  const addUser = (i: number) => {
+  const addUser = async () => {
     if (newUser !== null) {
-      let flag = 0;
-      Object.values(newUser[i]).map((val) => (val === "" ? (flag += 1) : null));
+      let flag = -1;
+      Object.values(newUser).map((val) => (val === "" ? (flag += 1) : null));
       if (flag) {
         showNotification(
           "Error",
@@ -114,20 +110,24 @@ function UserManagement() {
         );
         return;
       }
-      setNewUser(() => newUser.filter((_, index) => index !== i));
-      saveUser(newUser[i]);
-      if (usersList !== null) {
-        setUserslist([...usersList, newUser[i]]);
+      setNewUser(null);
+      setToggleAddUserModal(false);
+      setPassword("");
+      const response = await saveUser({ newUser, password });
+      if (response.status === 200) {
+        if (usersList !== null) {
+          setUserslist([...usersList, newUser]);
+        } else {
+          setUserslist([newUser]);
+        }
+        showNotification("Success", "user saved successfully", "success");
       } else {
-        setUserslist([newUser[i]]);
+        showNotification("Error", response.data.error, "error");
       }
     }
   };
   const selectLeads = () => {
     open();
-  };
-  const removeNewUser = () => {
-    setNewUser([]);
   };
   const getAvaiableLeads = () => {
     getAvaibleLeadsByDates({ startDate: leadsStartDate, endDate: leadsEndDate })
@@ -139,26 +139,19 @@ function UserManagement() {
         console.log(e);
       });
   };
-  const setAvailableLeadsValue = (): number => {
-    if (selectedUser === null) {
-      return 0;
-    } else if (selectedUser === 0) {
-      return employeeStarts.unassignedLead / employeeStarts.telecallerCount;
-    } else if (selectedUser === 1) {
-      return employeeStarts.unassignedLead / employeeStarts.employeeCount;
-    } else if (selectedUser === 2) {
-      return employeeStarts.unassignedLead / employeeStarts.brokerCount;
-    }
-    return 0;
-  };
+
   const assignLeads = async () => {
     try {
-      if (selectedUser !== undefined) {
-        const response = await assignLeadsToUser({
-          userType: usersTypes[selectedUser],
+      if (selectedUser !== undefined && selectedUser.length !== 0) {
+        console.log({
           startDate: leadsStartDate,
           endDate: leadsEndDate,
-          userCount: setAvailableLeadsValue(),
+          userIds: selectedUser,
+        });
+        const response = await assignLeadsToUser({
+          startDate: leadsStartDate,
+          endDate: leadsEndDate,
+          userIds: selectedUser,
         });
         console.log(response);
         if (response.status === 200) {
@@ -186,7 +179,7 @@ function UserManagement() {
           </Button>
         </Flex>
       </Flex>
-      <Modal size="50%" opened={opened} onClose={close} title="Assign Leads">
+      <Modal size="70%" opened={opened} onClose={close} title="Assign Leads">
         <Flex className="justify-center gap-4">
           <DateInput
             color="orange"
@@ -195,7 +188,7 @@ function UserManagement() {
             maxDate={new Date()}
             onChange={(val) => {
               setLeadsStartDate(val);
-              setSelectedUser(undefined);
+              setSelectedUser([]);
               setEmployeeStarts(null);
             }}
             placeholder="from date"
@@ -209,7 +202,7 @@ function UserManagement() {
             maxDate={new Date()}
             onChange={(val) => {
               setLeadsEndDate(val);
-              setSelectedUser(undefined);
+              setSelectedUser([]);
               setEmployeeStarts(null);
             }}
             placeholder="to date"
@@ -227,8 +220,8 @@ function UserManagement() {
           </Button>
         </Flex>
         {employeeStarts !== null ? (
-          <Flex className="w-full flex-col items-center pt-6 gap-4">
-            <Flex className="w-full justify-evenly">
+          <Flex className="w-full flex-col items-center pt-6 px-10 gap-4">
+            {/* <Flex className="w-full justify-evenly">
               <Checkbox
                 disabled={employeeStarts.telecallerCount === 0 ? true : false}
                 checked={selectedUser === 0}
@@ -265,10 +258,89 @@ function UserManagement() {
                 color="orange"
                 label={usersTypes[2]}
               />
-            </Flex>
+            </Flex> */}
+            <Tabs
+              color="orange"
+              className="w-full"
+              value={activeTab}
+              onChange={(val) => {
+                setActiveTab(val);
+                setSelectedUser([]);
+              }}
+            >
+              <Tabs.List justify="center">
+                {usersTypes.map((type) => {
+                  return (
+                    <Tabs.Tab value={type}>
+                      <Text tt="capitalize">{type}</Text>
+                    </Tabs.Tab>
+                  );
+                })}
+              </Tabs.List>
+              {usersTypes.map((type) => {
+                return (
+                  <Tabs.Panel value={type}>
+                    <Table
+                      highlightOnHover
+                      withTableBorder
+                      withColumnBorders
+                      verticalSpacing="lg"
+                      className=" w-full bg-white border-2 drop-shadow-md"
+                    >
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>Select User</Table.Th>
+                          <Table.Th>Name</Table.Th>
+                          <Table.Th>Employee Id</Table.Th>
+                          <Table.Th>Employee Type</Table.Th>
+                        </Table.Tr>
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {usersList?.map((user, i) => {
+                          if (user.employeeType === type) {
+                            return (
+                              <Table.Tr key={i}>
+                                <Table.Td>
+                                  <Checkbox
+                                    color="orange"
+                                    checked={
+                                      selectedUser.includes(user._id)
+                                        ? true
+                                        : false
+                                    }
+                                    onClick={(v) => {
+                                      (v.target as HTMLInputElement).checked ===
+                                      true
+                                        ? setSelectedUser([
+                                            ...selectedUser,
+                                            user._id,
+                                          ])
+                                        : setSelectedUser((prev) =>
+                                            prev.filter((e) => e != user._id)
+                                          );
+                                    }}
+                                  />
+                                </Table.Td>
+                                <Table.Td>{user.name}</Table.Td>
+                                <Table.Td>{user.employeeId}</Table.Td>
+                                <Table.Td>{user.employeeType}</Table.Td>
+                              </Table.Tr>
+                            );
+                          }
+                        })}
+                      </Table.Tbody>
+                    </Table>
+                  </Tabs.Panel>
+                );
+              })}
+            </Tabs>
             <Flex className="w-full justify-evenly items-center">
               <Text fw={400} size="md">
-                Available Leads are {setAvailableLeadsValue()}
+                Available Leads are{" "}
+                {selectedUser.length === 0
+                  ? 0
+                  : employeeStarts.unassignedLead / selectedUser.length}{" "}
+                per employee
               </Text>
               <Button onClick={assignLeads} color="orange">
                 Assign Leads
@@ -277,92 +349,111 @@ function UserManagement() {
           </Flex>
         ) : null}
       </Modal>
-      <Table
-        highlightOnHover
-        withTableBorder
-        withColumnBorders
-        verticalSpacing="lg"
-        className=" bg-white border-2 drop-shadow-md"
+      <Modal
+        size="50%"
+        opened={toggleAddUserModal}
+        onClose={() => {
+          setToggleAddUserModal(false);
+          setNewUser(null);
+        }}
+        title="Add User"
       >
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Employee Id</Table.Th>
-            <Table.Th>Employee Type</Table.Th>
-            <Table.Th>Joining Date</Table.Th>
-            <Table.Th>Email</Table.Th>
-            <Table.Th>Mobile No.</Table.Th>
-            <Table.Th>Add/Delete/Modify/View Activity</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {usersList?.map((user, i) => {
-            console.log(user);
-            return (
-              <Table.Tr key={i}>
-                <Table.Td>{user.name}</Table.Td>
-                <Table.Td>{user.employeeId}</Table.Td>
-                <Table.Td>{user.employeeType}</Table.Td>
-                <Table.Td>
-                  {new Date(user.joiningDate).getFullYear() +
-                    "-" +
-                    (new Date(user.joiningDate).getMonth() + 1) +
-                    "-" +
-                    new Date(user.joiningDate).getDate()}
-                </Table.Td>
-                <Table.Td>{user.email}</Table.Td>
-                <Table.Td>{user.mobileNo}</Table.Td>
-                <Table.Td>
-                  <Flex className="w-full justify-center gap-3">
-                    <IconPlus onClick={() => addUser(i)} />
-                    <IconTrash />
-                  </Flex>
-                </Table.Td>
-              </Table.Tr>
-            );
-          })}
-          {newUser?.map((user: userData, i) => {
-            return (
-              <Table.Tr key={i}>
-                {Object.keys(user).map((K, j) => {
-                  console.log(user);
-                  return (
-                    <Table.Td key={j}>
-                      {K === "joiningDate" ? (
-                        <Table.Td>
-                          {new Date(user.joiningDate).getFullYear() +
-                            "-" +
-                            (new Date(user.joiningDate).getMonth() + 1) +
-                            "-" +
-                            new Date(user.joiningDate).getDate()}
-                        </Table.Td>
-                      ) : (
-                        <TextInput
-                          required
-                          onChange={(e) =>
-                            updateUserValue(
-                              e.target.value,
-                              i,
-                              K as keyof userData
-                            )
-                          }
-                          value={user[K as keyof userData].toString()}
-                        />
-                      )}
-                    </Table.Td>
-                  );
-                })}
-                <Table.Td>
-                  <Flex className="w-full justify-center gap-3">
-                    <IconPlus onClick={() => addUser(i)} />
-                    <IconTrash onClick={removeNewUser} />
-                  </Flex>
-                </Table.Td>
-              </Table.Tr>
-            );
-          })}
-        </Table.Tbody>
-      </Table>
+        {newUser && (
+          <Flex className="gap-4 flex-col px-4">
+            <TextInput
+              required
+              placeholder="name"
+              value={newUser.name}
+              onChange={(e) => updateUserValue(e.target.value, "name")}
+            />
+            <TextInput
+              required
+              placeholder="employeeId"
+              value={newUser.employeeId}
+              onChange={(e) => updateUserValue(e.target.value, "employeeId")}
+            />
+            <Select
+              data={usersTypes}
+              placeholder="employeeType"
+              value={newUser.employeeType}
+              onChange={(val) =>
+                val !== null ? updateUserValue(val, "employeeType") : null
+              }
+            />
+            <TextInput
+              required
+              placeholder="email"
+              type="email"
+              value={newUser.email}
+              onChange={(e) => updateUserValue(e.target.value, "email")}
+            />
+            <TextInput
+              required
+              placeholder="mobileNo"
+              value={newUser.mobileNo}
+              onChange={(e) => updateUserValue(e.target.value, "mobileNo")}
+            />
+            <TextInput
+              required
+              type="password"
+              placeholder="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Flex onClick={addUser} className="w-full justify-center gap-3">
+              <IconPlus className="hover:bg-orange-400 border-black rounded-md hover:cursor-pointer" />{" "}
+              Add user
+            </Flex>
+          </Flex>
+        )}
+      </Modal>
+      <ScrollArea className="w-full" h={700}>
+        <Table
+          highlightOnHover
+          withTableBorder
+          withColumnBorders
+          verticalSpacing="lg"
+          className=" w-full bg-white border-2 drop-shadow-md"
+        >
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Employee Id</Table.Th>
+              <Table.Th>Employee Type</Table.Th>
+              <Table.Th>Joining Date</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>Mobile No.</Table.Th>
+              <Table.Th>Add/Delete/Modify/View Activity</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {usersList?.map((user, i) => {
+              return (
+                <Table.Tr key={i}>
+                  <Table.Td>{user.name}</Table.Td>
+                  <Table.Td>{user.employeeId}</Table.Td>
+                  <Table.Td>{user.employeeType}</Table.Td>
+                  <Table.Td>
+                    {new Date(user.joiningDate).getFullYear() +
+                      "-" +
+                      (new Date(user.joiningDate).getMonth() + 1) +
+                      "-" +
+                      new Date(user.joiningDate).getDate()}
+                  </Table.Td>
+                  <Table.Td>{user.email}</Table.Td>
+                  <Table.Td>{user.mobileNo}</Table.Td>
+                  <Table.Td>
+                    <Flex className="w-full justify-center gap-3">
+                      <IconPlus />
+                      <IconTrash />
+                    </Flex>
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })}
+          </Table.Tbody>
+        </Table>
+      </ScrollArea>
     </Flex>
   );
 }

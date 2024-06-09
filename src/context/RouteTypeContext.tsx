@@ -8,7 +8,8 @@ const RouteTypeContext = createContext<RouteTypeContextInterface>(
 
 export const RouteTypeContextProvider = ({ children }: { children: any }) => {
   const location = useLocation();
-  const [type, setType] = useState<number>(currState.UNKNOWN);
+  const [type, setType] = useState<number>(currState.UNPROTECTED);
+  console.log(location.pathname);
   useEffect(() => {
     if (
       location.pathname.includes("/admin/") &&
@@ -20,8 +21,6 @@ export const RouteTypeContextProvider = ({ children }: { children: any }) => {
       !location.pathname.includes("/auth/")
     ) {
       setType(currState.USER);
-    } else {
-      setType(currState.UNPROTECTED);
     }
   }, [location]);
   const cachedValue = useMemo(
@@ -31,6 +30,7 @@ export const RouteTypeContextProvider = ({ children }: { children: any }) => {
     }),
     [type]
   );
+  console.log(type);
   return (
     <RouteTypeContext.Provider value={cachedValue}>
       {type != currState.UNKNOWN && children}

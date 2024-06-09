@@ -2,10 +2,15 @@ import { Flex, Image, NavLink } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { NavLinks } from "../../../utils/Navlinks";
 import { useState } from "react";
+import SignOut from "../../../assets/imgs/SignOut.svg";
+import useRouteTypeContext from "../../../context/RouteTypeContext";
+import { currState } from "../../../utils/helpers";
+import Cookies from "js-cookie";
 
 function Navbar() {
   const [toogleNavbar, setToogleNavbar] = useState(true);
   const [navVal, setNavVal] = useState(NavLinks[0].label);
+  const { setType } = useRouteTypeContext();
   const handleClick = (label: string) => {
     if (label === navVal) {
       setToogleNavbar(!toogleNavbar);
@@ -13,6 +18,10 @@ function Navbar() {
       setNavVal(label);
     }
     return;
+  };
+  const handleLogout = () => {
+    setType(currState.UNPROTECTED);
+    Cookies.set("token", "");
   };
   return (
     <Flex
@@ -56,6 +65,20 @@ function Navbar() {
             />
           )
         )}
+        <NavLink
+          onClick={handleLogout}
+          component={Link}
+          label={toogleNavbar ? "Sign Out" : null}
+          to={"/"}
+          className="!p-0"
+          leftSection={
+            <Image
+              className={`${toogleNavbar ? "h-[50%]" : "h-[100%]"}`}
+              src={SignOut}
+            />
+          }
+          color="orange"
+        />
       </Flex>
     </Flex>
   );
